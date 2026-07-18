@@ -292,8 +292,19 @@ static void pp2106_fetchkeys(struct work_struct *work)
 	if (key_col)
 		key_col -= 1;
 
-	key_row >>= 4; 
+	key_row >>= 4;
 	key_row &= 0x07;
+
+	if (key_row >= pp2106_pdata->keypad_row || key_col >= pp2106_pdata->keypad_col) {
+		/* lectura espuria del chip durante pp2106_hwreset() (probe/resume):
+		 * el falling-edge de reset dispara el IRQ antes de que el chip este
+		 * listo, y el bit-banging devuelve basura fuera de la grilla real.
+		 * Sin este chequeo se indexaba fuera de pp2106_keycode[] e inyectaba
+		 * una tecla fantasma en cada wake de pantalla. */
+		printk(KERN_INFO"Keypad : descartando lectura fuera de rango row <0x%x>, column <0x%x>\n",
+				key_row, key_col);
+		return;
+	}
 
 	scancode = (unsigned int)pp2106_pdata->keycode[2 * (key_row * pp2106_pdata->keypad_col + key_col)];
 
