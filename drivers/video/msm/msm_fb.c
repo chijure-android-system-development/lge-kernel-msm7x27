@@ -1383,15 +1383,10 @@ static int msm_fb_open(struct fb_info *info, int user)
 		}
 	}
 
-/* LGE_CHANGE_S
- * Change codes to remove console cursor on booting screen. Refered to VS740
- * 2010-07-31. minjong.gong@lge.com
+/* Console stays inactive after register. Re-enabling it here redraws
+ * the fbcon underline cursor on top of the UI (the "ANDROID_" mark).
+ * CONFIG_FRAMEBUFFER_CONSOLE stays on so chargerlogo still attaches early.
  */
-#ifdef CONFIG_LGE_FBCON_INACTIVE_CONSOLE
-		if(mfd->ref_cnt > 1 && msm_fb_get_console_inactive())
-				msm_fb_set_console_inactive(0);
-#endif
-/* LGE_CHANGE_E, 2010-07-31. minjong.gong@lge.com */
 
 	mfd->ref_cnt++;
 	return 0;
